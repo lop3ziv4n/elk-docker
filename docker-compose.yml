@@ -1,0 +1,38 @@
+version: "2.0"
+services:
+  elasticsearch:
+    image: elasticsearch:latest
+    restart: always
+    command: elasticsearch
+    ports:
+      - 9200:9200
+      - 9300:9300
+    volumes:
+      - /srv/elasticsearch1:/usr/share/elasticsearch/data    
+  logstash:
+    image: logstash:latest
+    restart: always
+    command: logstash -f /etc/logstash/conf.d/logstash.conf
+    volumes:
+      - /srv/docker-compose-servers/elk/logstash/:/etc/logstash/conf.d
+    ports:
+      - 5000:5000
+    links:
+      - elasticsearch
+  kibana:
+    image: kibana
+    restart: always
+    ports:
+      - 5601:5601
+    links:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+
+networks:
+  default:
+    external:
+      name: net_24
+      
+#Created networks
+#docker network create --driver=bridge --subnet=172.24.0.0/16 --gateway=172.24.0.1 net_24
